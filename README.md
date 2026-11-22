@@ -1,16 +1,18 @@
 # DK Site
 
-Website AI làm nét ảnh trên Cloud, giao diện tối ưu cho điện thoại. Backend FastAPI gọi Replicate Real-ESRGAN 4x; API token chỉ nằm trong biến môi trường máy chủ.
+Website tĩnh độc lập chạy bằng GitHub Pages. Không có backend, không cần Render, Termux hay API key.
 
-## Deploy trên Render
-1. Mở https://dashboard.render.com/ và chọn **New > Blueprint**.
-2. Chọn repository `Khanhcute111/Duy-khanh` và nhánh `main`.
-3. Khi Render yêu cầu, thêm biến môi trường `REPLICATE_API_TOKEN` bằng token mới tạo tại https://replicate.com/account/api-tokens.
-4. Deploy. Render sẽ tạo web service theo `render.yaml`.
-5. Mở URL `https://dk-site.onrender.com` (hoặc URL Render cấp nếu tên đã được dùng).
+## Cách hoạt động
+- Giao diện chạy trong trình duyệt.
+- AI nâng cấp ảnh dùng UpscalerJS + ESRGAN 2x chạy trên thiết bị.
+- Thư viện và trọng số mô hình được tải từ CDN khi cần; ảnh được chọn không gửi đến máy chủ DK Site.
+- Hiệu năng phụ thuộc thiết bị, RAM và trình duyệt.
 
-## Lưu ý
-- Không commit API token vào GitHub hoặc gửi token trong chat. Token đã từng được dán công khai cần thu hồi và thay mới.
-- Replicate là dịch vụ tính phí theo mức sử dụng/tài khoản; không cam kết miễn phí vô hạn.
-- Model: `cjwbw/real-esrgan`, scale 4x.
-- Health check: `/api/health`.
+## Bật GitHub Pages
+1. Mở Settings của repository.
+2. Chọn Pages.
+3. Trong Build and deployment, chọn Source là GitHub Actions.
+4. Lưu lại. Workflow tự triển khai khi có commit vào nhánh main.
+
+Sau khi workflow thành công, URL thường có dạng:
+https://khanhcute111.github.io/Duy-khanh/
