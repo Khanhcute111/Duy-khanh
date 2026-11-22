@@ -7,7 +7,6 @@ import httpx
 import replicate
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse, Response
-from fastapi.staticfiles import StaticFiles
 from PIL import Image, UnidentifiedImageError
 
 logging.basicConfig(level=logging.INFO)
@@ -60,7 +59,7 @@ async def enhance(image: UploadFile = File(...)):
         with buf as source:
             output: Any = replicate.run(
                 f"cjwbw/real-esrgan:{MODEL_VERSION}",
-                input={"image": source, "scale": 4}
+                input={"image": source, "upscale": 4}
             )
         if isinstance(output, (list, tuple)):
             output = output[0] if output else None
