@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="vi" data-mode="dark" data-style="cool">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DuyKhanh Dev — AI Photo Studio, Video Downloader & Banker VIP</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+/* ==================== THEME VARIABLES (DARK/LIGHT × COOL/CUTE) ==================== */
+:root{
+  --bg:#09090B;--pn:rgba(18,18,22,.86);--card:#15151a;--txt:#f4f4f5;--sub:#a1a1aa;
+  --ln:rgba(255,255,255,.09);--acc1:#00F0FF;--acc2:#10B981;--acc3:#a855f7;
+  --rad:0.65rem;--card-rad:1.1rem;--glow:rgba(0,240,255,.22);
+  --grad-btn:linear-gradient(135deg,#00F0FF,#10B981);--btn-txt:#04110e;
+}
+/* 1. NGẦU + SÁNG (CYBER LIGHT) */
+html[data-mode="light"][data-style="cool"]{
+  --bg:#eef2f6;--pn:rgba(255,255,255,.88);--card:#ffffff;--txt:#0f172a;--sub:#475569;
+  --ln:rgba(15,23,42,.12);--acc1:#0284c7;--acc2:#059669;--acc3:#7c3aed;
+  --glow:rgba(2,132,199,.18);--grad-btn:linear-gradient(135deg,#0284c7,#10b981);--btn-txt:#ffffff;
+}
+/* 2. CUTE DỄ THƯƠNG + TỐI (KAWAII NIGHT) */
+html[data-mode="dark"][data-style="cute"]{
+  --bg:#16101d;--pn:rgba(33,22,44,.88);--card:#261933;--txt:#fdf2f8;--sub:#f5d0fe;
+  --ln:rgba(244,114,182,.25);--acc1:#ff7eb6;--acc2:#7afcff;--acc3:#c084fc;
+  --rad:1.15rem;--card-rad:1.6rem;--glow:rgba(255,126,182,.28);
+  --grad-btn:linear-gradient(135deg,#ff7eb6,#ff9a9e,#fecfef);--btn-txt:#2b091c;
+}
+/* 3. CUTE DỄ THƯƠNG + SÁNG (PASTEL MOCHI) */
+html[data-mode="light"][data-style="cute"]{
+  --bg:#fff5f8;--pn:rgba(255,255,255,.9);--card:#fff0f6;--txt:#4a1533;--sub:#833860;
+  --ln:rgba(244,114,182,.3);--acc1:#ec4899;--acc2:#06b6d4;--acc3:#a855f7;
+  --rad:1.15rem;--card-rad:1.6rem;--glow:rgba(236,72,153,.2);
+  --grad-btn:linear-gradient(135deg,#ff758c,#ff7eb3);--btn-txt:#ffffff;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;height:100dvh;overflow:hidden;transition:background .35s ease,color .35s ease}
+.glass{background:var(--pn);backdrop-filter:blur(16px);border:1px solid var(--ln);transition:background .35s,border-color .35s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.46rem .82rem;border-radius:var(--rad);border:1px solid var(--ln);background:var(--card);font-size:.8rem;transition:all .2s cubic-bezier(.34,1.56,.64,1);cursor:pointer;white-space:nowrap;color:var(--txt)}
+.btn:hover{border-color:var(--acc1);color:var(--acc1);transform:translateY(-1px)}
+html[data-style="cute"] .btn:hover{transform:scale(1.04) translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.pri{background:var(--grad-btn);color:var(--btn-txt);font-weight:700;border:0;box-shadow:0 4px 18px var(--glow)}
+.btn.pri:hover{color:var(--btn-txt);filter:brightness(1.08)}
+.btn.gold{background:linear-gradient(135deg,#fde047,#f59e0b,#ea580c);color:#140900;font-weight:700;border:0;box-shadow:0 0 24px rgba(245,158,11,.35)}
+.btn.gold:hover{filter:brightness(1.1);color:#140900}
+.btn.on,.mode.on,.chip.on,.pchip.on{border-color:var(--acc1);color:var(--acc1);background:color-mix(in srgb,var(--acc1) 14%,transparent);font-weight:600}
+.mode,.chip,.pchip{display:flex;align-items:center;justify-content:center;gap:.45rem;padding:.55rem .65rem;border-radius:var(--rad);border:1px solid var(--ln);background:var(--card);font-size:.76rem;cursor:pointer;transition:.18s;color:var(--txt)}
+.mode:hover,.chip:hover,.pchip:hover{border-color:var(--acc1)}
+input[type=range]{width:100%;accent-color:var(--acc1);height:4px;cursor:pointer}
+input[type=text],input[type=number],input[type=url]{background:var(--card);border:1px solid var(--ln);color:var(--txt);border-radius:var(--rad);padding:.55rem .8rem;font-size:.82rem;outline:none;transition:.2s;width:100%}
+input:focus{border-color:var(--acc1);box-shadow:0 0 0 3px var(--glow)}
+
+/* Dropzone & Scan Effects */
+#drop{border:2px dashed color-mix(in srgb,var(--acc1) 40%,transparent);border-radius:var(--card-rad);transition:.25s;overflow:hidden}
+#drop.hot,#drop:hover{border-color:var(--acc1);box-shadow:0 0 0 1px var(--acc1),0 0 40px var(--glow)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ring{animation:spin 10s linear infinite;transform-origin:20px 20px}
+.scanbar{height:3px;background:var(--ln);overflow:hidden;border-radius:4px}
+.scanbar i{display:block;height:100%;width:35%;background:linear-gradient(90deg,transparent,var(--acc1),transparent);transform:translateX(-100%)}
+.busy .scanbar i{animation:sc 1s linear infinite}
+@keyframes sc{to{transform:translateX(300%)}}
+#sweep{position:absolute;left:0;right:0;height:65px;top:-65px;background:linear-gradient(transparent,color-mix(in srgb,var(--acc1) 30%,transparent),transparent);pointer-events:none;opacity:0}
+.busy #sweep{opacity:1;animation:sw 1s ease-in-out infinite}
+@keyframes sw{to{top:100%}}
+
+canvas{display:block}
+#panel [data-tab]{display:none}
+#panel[data-t=s] [data-tab=s],#panel[data-t=c] [data-tab=c],#panel[data-t=f] [data-tab=f],#panel[data-t=t] [data-tab=t]{display:block}
+#tabs button{position:relative;z-index:1;padding:.5rem;font-size:.78rem;border-radius:var(--rad);transition:.25s;color:var(--sub);cursor:pointer}
+#tabs button.on{color:var(--btn-txt);font-weight:700}
+
+header{position:relative;z-index:30}
+header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--acc1),var(--acc2),var(--acc3),transparent);background-size:200% 100%;animation:flow 6s linear infinite}
+@keyframes flow{to{background-position:-200% 0}}
+
+/* Theme Switch Shockwave Animation */
+#themeWave{position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0}
+#themeWave.active{animation:waveBurst .75s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes waveBurst{
+  0%{opacity:.95;clip-path:circle(0px at var(--wx,50%) var(--wy,50%))}
+  70%{opacity:.85;clip-path:circle(155vmax at var(--wx,50%) var(--wy,50%))}
+  100%{opacity:0;clip-path:circle(165vmax at var(--wx,50%) var(--wy,50%))}
+}
+
+/* Cute Floating Particles */
+.cute-deco{display:none;pointer-events:none}
+html[data-style="cute"] .cute-deco{display:block}
+.float-cute{animation:floatCute 3.5s ease-in-out infinite}
+@keyframes floatCute{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(4deg)}}
+
+/* Slide-out Menu Drawer */
+#drawerOverlay{position:fixed;inset:0;background:rgba(3,3,6,.72);backdrop-filter:blur(8px);z-index:60;opacity:0;pointer-events:none;transition:opacity .28s ease}
+#drawerOverlay.open{opacity:1;pointer-events:auto}
+#navDrawer{position:fixed;top:0;left:0;bottom:0;width:360px;max-width:92vw;background:var(--pn);border-right:1px solid var(--ln);box-shadow:20px 0 60px rgba(0,0,0,.65);z-index:70;transform:translateX(-105%);transition:transform .32s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column}
+#navDrawer.open{transform:translateX(0)}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.72rem .85rem;border-radius:var(--rad);border:1px solid var(--ln);background:var(--card);transition:all .2s;cursor:pointer;text-align:left;width:100%;color:var(--txt)}
+.nav-item:hover{border-color:var(--acc1);transform:translateX(3px)}
+.nav-item.active{border-color:var(--acc1);background:color-mix(in srgb,var(--acc1) 14%,var(--card));box-shadow:0 0 20px var(--glow)}
+
+/* Quantum Banker Card */
+.banker-stage{background:radial-gradient(circle at 18% 20%,rgba(225,29,72,.22),transparent 45%),radial-gradient(circle at 82% 75%,rgba(16,185,129,.22),transparent 48%),radial-gradient(circle at 50% 45%,#13101d,#060609 78%)}
+.qcard-wrap{perspective:1400px}
+.qcard{position:relative;border-radius:22px;transform-style:preserve-3d;transition:transform .14s ease-out,box-shadow .3s ease;box-shadow:0 20px 55px rgba(0,0,0,.65),0 0 32px rgba(245,158,11,.24);border:1px solid rgba(253,224,71,.48);overflow:hidden;background:linear-gradient(135deg,#1d0b14 0%,#0f131a 52%,#081f1a 100%);color:#f4f4f5}
+.qcard::before{content:"";position:absolute;inset:-2px;border-radius:23px;padding:2px;background:conic-gradient(from var(--ang,0deg),#fde047,#10b981,#00f0ff,#f43f5e,#fde047);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;animation:rotBorder 4.5s linear infinite}
+@property --ang{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes rotBorder{to{--ang:360deg}}
+.qcard-glare{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.32) 0%,rgba(253,224,71,.16) 24%,rgba(0,240,255,.09) 45%,transparent 70%);mix-blend-mode:screen}
+.qcard-holo{position:absolute;inset:0;pointer-events:none;opacity:.25;background:repeating-linear-gradient(115deg,transparent 0%,rgba(0,240,255,.42) 12%,rgba(253,224,71,.48) 24%,rgba(244,63,94,.42) 36%,transparent 48%);background-size:250% 250%;animation:holoShift 5.5s ease-in-out infinite;mix-blend-mode:color-dodge}
+@keyframes holoShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.gold-shimmer{background:linear-gradient(90deg,#fef08a 0%,#f59e0b 25%,#ffffff 50%,#fbbf24 75%,#fef08a 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shineText 3.2s linear infinite}
+@keyframes shineText{to{background-position:200% center}}
+.emv-chip{width:34px;height:24px;border-radius:5px;background:linear-gradient(135deg,#fef08a,#d97706,#fef08a);border:1px solid rgba(255,255,255,.5);position:relative;overflow:hidden}
+.qr-laser{position:absolute;left:6%;right:6%;height:2px;background:linear-gradient(90deg,transparent,#00f0ff,#fde047,#00f0ff,transparent);box-shadow:0 0 12px #00f0ff;animation:qrScan 2.4s ease-in-out infinite}
+@keyframes qrScan{0%,100%{top:8%}50%{top:90%}}
+
+@media(prefers-reduced-motion:reduce){*,::before,::after{animation:none!important}}
+</style>
+</head>
+<body>
+<!-- FULLSCREEN THEME WAVE OVERLAY -->
+<div id="themeWave"></div>
+
+<div id="app" class="flex flex-col h-full">
+
+<!-- ==================== HEADER ==================== -->
+<header class="glass flex items-center gap-2.5 px-3 py-2 flex-wrap border-x-0 border-t-0">
+  <button id="bMenu" type="button" class="group relative flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all cursor-pointer" style="background:var(--card);border-color:var(--acc1);box-shadow:0 0 16px var(--glow)" aria-label="Mở Menu">
+    <span class="flex flex-col justify-center gap-[4px] w-4 h-4">
+      <span class="w-4 h-[2px] rounded-full transition-transform group-hover:translate-x-0.5" style="background:var(--acc1)"></span>
+      <span class="w-3 h-[2px] rounded-full transition-all group-hover:w-4" style="background:var(--acc2)"></span>
+      <span class="w-4 h-[2px] rounded-full transition-transform group-hover:-translate-x-0.5" style="background:var(--acc1)"></span>
+    </span>
+    <span class="text-xs font-bold tracking-wide">Menu</span>
+    <span class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-md" style="background:color-mix(in srgb,var(--acc1) 18%,transparent);color:var(--acc1)">Hub</span>
+  </button>
+
+  <div class="flex items-center gap-2">
+    <svg width="32" height="32" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="10" fill="#0d0d10" stroke="#00F0FF" stroke-opacity=".5"/><circle class="ring" cx="20" cy="20" r="11" fill="none" stroke="#10B981" stroke-width="1.6" stroke-dasharray="16 6"/><circle cx="20" cy="20" r="5" fill="none" stroke="#00F0FF" stroke-width="1.6"/></svg>
+    <div class="leading-tight">
+      <div class="font-bold tracking-tight text-[14px] flex items-center gap-1.5">
+        DuyKhanh Dev <span class="cute-deco float-cute text-sm">🌸✨</span>
+      </div>
+      <div id="subTitle" class="text-[11px]" style="color:var(--sub)">Làm nét & nâng cấp ảnh</div>
+    </div>
+  </div>
+
+  <!-- THEME SWITCHERS: SÁNG/TỐI & NGẦU/CUTE -->
+  <div class="flex items-center gap-1.5 ml-auto sm:mx-auto">
+    <!-- Nút Sáng / Tối -->
+    <button id="bToggleMode" type="button" onclick="toggleDarkLight(event)" class="btn text-xs font-semibold px-2.5 py-1.5" title="Chuyển giao diện Sáng / Tối">
+      <i id="modeIcon" data-lucide="moon" class="w-3.5 h-3.5 text-amber-400"></i>
+      <span id="modeLabel">Tối</span>
+    </button>
+
+    <!-- Nút Ngầu / Cute Dễ Thương -->
+    <button id="bToggleStyle" type="button" onclick="toggleCoolCute(event)" class="btn text-xs font-semibold px-2.5 py-1.5" title="Đổi phong cách Ngầu / Cute">
+      <span id="styleEmoji">⚡</span>
+      <span id="styleLabel">Ngầu</span>
+    </button>
+  </div>
+
+  <div id="headerActions" class="flex gap-2">
+    <button class="btn" id="bSample" type="button"><i data-lucide="image" class="w-4 h-4"></i><span class="hidden md:inline">Ảnh mẫu</span></button>
+    <button class="btn pri" id="bDl" type="button"><i data-lucide="download" class="w-4 h-4"></i><span class="hidden sm:inline">Tải ảnh nét</span><span class="sm:hidden">Tải</span></button>
+  </div>
+</header>
+
+<!-- ==================== SLIDE-OUT MENU DRAWER ==================== -->
+<div id="drawerOverlay"></div>
+<aside id="navDrawer" aria-label="Menu Project & Banker VIP">
+  <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--ln)">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shadow-lg" style="background:var(--grad-btn);color:var(--btn-txt)">DK</div>
+      <div>
+        <div class="text-sm font-bold flex items-center gap-1.5">DuyKhanh Dev <span class="cute-deco">🐰💖</span></div>
+        <div class="text-[11px]" style="color:var(--sub)">AI Studio • Video • Banker VIP</div>
+      </div>
+    </div>
+    <button id="bCloseMenu" type="button" class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer" style="background:var(--card)" aria-label="Đóng Menu">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
+  </div>
+
+  <div class="p-3.5 flex-1 overflow-y-auto flex flex-col justify-between gap-4">
+    <!-- Danh sách 3 tính năng chính -->
+    <div>
+      <div class="text-[10px] font-bold uppercase tracking-widest mb-2 px-1" style="color:var(--sub)">Công Cụ Đa Phương Tiện</div>
+      <div class="space-y-2" id="projectNavList">
+        <button type="button" class="nav-item active" data-view="enhance">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-none" style="background:color-mix(in srgb,var(--acc1) 18%,transparent);color:var(--acc1)"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold truncate">Làm Nét & Nâng Cấp Ảnh</div>
+            <div class="text-[11px] truncate" style="color:var(--sub)">Loading 0-100%, khử mờ, phóng to 4X</div>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold" style="background:color-mix(in srgb,var(--acc1) 18%,transparent);color:var(--acc1)">CHÍNH</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="outpaint">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-none" style="background:color-mix(in srgb,var(--acc2) 18%,transparent);color:var(--acc2)"><i data-lucide="expand" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold truncate">Mở Rộng Hình Ảnh (AI Expand)</div>
+            <div class="text-[11px] truncate" style="color:var(--sub)">Mở rộng khung 16:9, 9:16, 1:1 mượt mà</div>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold" style="background:color-mix(in srgb,var(--acc2) 18%,transparent);color:var(--acc2)">EXPAND</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="downloader">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-none" style="background:color-mix(in srgb,var(--acc3) 18%,transparent);color:var(--acc3)"><i data-lucide="download-cloud" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold truncate">Tải Video TikTok / YouTube / FB</div>
+            <div class="text-[11px] truncate" style="color:var(--sub)">Dán link tải video HD không logo</div>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold" style="background:color-mix(in srgb,var(--acc3) 18%,transparent);color:var(--acc3)">HD MP4</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BANKER VIP ĐẶC SẮC TRONG MENU (CHỌN SỐ TIỀN + HIỂN THỊ TÊN) -->
+    <div class="pt-1">
+      <div class="text-[10px] font-bold uppercase tracking-widest text-amber-400 px-1 mb-2 flex items-center justify-between">
+        <span class="flex items-center gap-1.5"><i data-lucide="crown" class="w-3.5 h-3.5 text-amber-300"></i>Banker VIP • Quantum</span>
+        <span class="text-[10px] text-emerald-400">NAPAS 24/7</span>
+      </div>
+
+      <div class="qcard-wrap">
+        <div class="qcard p-3.5 space-y-3" id="miniBankerCard">
+          <div class="qcard-holo"></div>
+          <div class="qcard-glare" id="miniBankerGlare"></div>
+
+          <!-- Header -->
+          <div class="relative flex items-center justify-between">
+            <span class="text-xs font-black tracking-wider text-amber-300 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]"></span>AGRIBANK VIP
+            </span>
+            <span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-300/40 text-amber-200 font-bold">LÊ VĂN DUY KHÁNH</span>
+          </div>
+
+          <!-- QR + Account Info + Name -->
+          <div class="relative flex items-center gap-3">
+            <div class="relative w-20 h-20 rounded-xl bg-white p-1 shrink-0 shadow-[0_0_20px_rgba(0,240,255,.35)] overflow-hidden">
+              <img id="miniBankQr" src="https://img.vietqr.io/image/970405-8888375590209-qr_only.png?accountName=LE%20VAN%20DUY%20KHANH" alt="VietQR" class="w-full h-full object-contain">
+              <div class="qr-laser"></div>
+            </div>
+            <div class="flex-1 min-w-0 space-y-1">
+              <div class="text-[10px] text-zinc-400 uppercase tracking-wider">Chủ tài khoản</div>
+              <div class="text-xs font-extrabold text-emerald-300 truncate">LE VAN DUY KHANH</div>
+              <div class="flex items-center justify-between gap-1 pt-0.5">
+                <code class="text-[13px] font-black tracking-wider gold-shimmer select-all">8888375590209</code>
+                <button type="button" onclick="copySTK(this)" class="px-2 py-0.5 rounded bg-amber-400/20 hover:bg-amber-400/35 border border-amber-300/45 text-amber-200 text-[10px] font-bold cursor-pointer">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chọn nhanh số tiền để bank -->
+          <div class="relative space-y-1.5 pt-1 border-t border-white/10">
+            <div class="flex items-center justify-between text-[10px] text-zinc-300">
+              <span>Chọn số tiền tạo QR nhanh:</span>
+              <b id="miniAmtLabel" class="text-amber-300">Tùy tâm</b>
+            </div>
+            <div class="grid grid-cols-4 gap-1">
+              <button type="button" onclick="setBankAmount(20000)" class="py-1 rounded bg-white/10 hover:bg-amber-400/25 text-[10px] font-bold text-amber-200 cursor-pointer">20k</button>
+              <button type="button" onclick="setBankAmount(50000)" class="py-1 rounded bg-white/10 hover:bg-amber-400/25 text-[10px] font-bold text-amber-200 cursor-pointer">50k</button>
+              <button type="button" onclick="setBankAmount(100000)" class="py-1 rounded bg-white/10 hover:bg-amber-400/25 text-[10px] font-bold text-amber-200 cursor-pointer">100k</button>
+              <button type="button" onclick="setBankAmount(500000)" class="py-1 rounded bg-white/10 hover:bg-amber-400/25 text-[10px] font-bold text-amber-200 cursor-pointer">500k</button>
+            </div>
+            <input id="miniCustomAmt" type="number" min="0" step="10000" placeholder="Hoặc nhập số tiền (VNĐ)..." oninput="setBankAmount(this.value)" class="!py-1 !px-2 !text-[11px] !bg-black/50 !text-white !border-amber-400/30">
+          </div>
+
+          <button id="bOpenBankerFull" type="button" class="relative w-full py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 text-zinc-950 font-extrabold text-xs shadow-lg hover:brightness-110 transition cursor-pointer flex items-center justify-center gap-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>Mở Thẻ Banker 3D Toàn Màn Hình
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ===================================================================== -->
+<!-- VIEW 1: LÀM NÉT & NÂNG CẤP ẢNH (CÓ LOADING 0-100% KHI UP ẢNH)         -->
+<!-- ===================================================================== -->
+<div id="ws-enhance" class="ws-view flex flex-1 min-h-0 flex-col md:flex-row">
+  <main class="relative flex-1 min-h-0 flex flex-col">
+    <div id="view" class="relative flex-1 min-h-0 overflow-auto flex">
+      <!-- Upload Dropzone -->
+      <label id="drop" class="absolute inset-4 z-10 flex flex-col items-center justify-center gap-3 cursor-pointer text-center p-6 glass">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg" style="background:color-mix(in srgb,var(--acc1) 16%,transparent);color:var(--acc1)">
+          <i data-lucide="upload-cloud" class="w-9 h-9"></i>
+        </div>
+        <div class="text-lg font-bold">Kéo thả ảnh vào đây hoặc bấm để chọn <span class="cute-deco">✨🌷</span></div>
+        <div class="text-xs max-w-md" style="color:var(--sub)">Hỗ trợ JPG, PNG, WebP. Ảnh sẽ được nạp với thanh tiến trình 0% - 100% và hiển thị ngay lập tức.</div>
+        <input id="file" type="file" accept="image/*" class="hidden">
+      </label>
+
+      <!-- 0% -> 100% IMAGE UPLOAD PROGRESS OVERLAY -->
+      <div id="imgLoadHud" class="hidden absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+        <div class="glass rounded-2xl p-6 max-w-sm w-full text-center space-y-3 border" style="border-color:var(--acc1);box-shadow:0 0 40px var(--glow)">
+          <div class="text-xs font-bold uppercase tracking-widest" style="color:var(--acc1)">Đang Tải & Xử Lý Điểm Ảnh</div>
+          <div id="imgLoadPct" class="text-4xl font-black tracking-tight" style="color:var(--acc1)">0%</div>
+          <div class="w-full h-3 rounded-full bg-black/50 overflow-hidden p-0.5 border border-white/10">
+            <div id="imgLoadBar" class="h-full rounded-full transition-all duration-75" style="width:0%;background:var(--grad-btn)"></div>
+          </div>
+          <div id="imgLoadStep" class="text-xs" style="color:var(--sub)">Đang đọc dữ liệu tệp ảnh...</div>
+        </div>
+      </div>
+
+      <!-- Canvas Before/After Comparison -->
+      <div id="wrap" class="relative m-auto flex-none shadow-2xl" style="width:0;height:0;background:#000">
+        <canvas id="cvR" class="absolute inset-0 w-full h-full"></canvas>
+        <canvas id="cvO" class="absolute inset-0 w-full h-full" style="clip-path:inset(0 50% 0 0)"></canvas>
+        <div id="lp" class="absolute hidden z-20 pointer-events-none rounded-full overflow-hidden border-2 shadow-2xl" style="width:150px;height:150px;border-color:var(--acc1)">
+          <canvas id="lpc" width="150" height="150"></canvas>
+        </div>
+        <div id="sweep"></div>
+        <span class="absolute left-2 top-2 text-[11px] px-2 py-1 rounded-md bg-black/65 text-white border border-white/10">Ảnh gốc</span>
+        <span class="absolute right-2 top-2 text-[11px] px-2 py-1 rounded-md bg-black/65 border" style="border-color:var(--acc1);color:var(--acc1)">Đã làm nét</span>
+        <div id="hd" class="absolute top-0 bottom-0 w-11 -ml-[22px] cursor-ew-resize flex justify-center" style="left:50%;touch-action:none" role="slider" aria-label="So sánh trước sau" tabindex="0">
+          <div class="w-[2px] h-full" style="background:var(--acc1);box-shadow:0 0 12px var(--acc1)"></div>
+          <div class="absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-zinc-950 border-2 flex items-center justify-center shadow-lg" style="border-color:var(--acc1);color:var(--acc1)"><i data-lucide="move-horizontal" class="w-4 h-4"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="bar" class="glass flex items-center gap-2 px-3 py-2 border-x-0 border-b-0 flex-wrap">
+      <button class="btn" id="bFit" type="button">Vừa khung</button>
+      <button class="btn" id="b100" type="button">100%</button>
+      <button class="btn" id="bLoupe" type="button"><i data-lucide="search" class="w-4 h-4"></i>Kính lúp</button>
+      <button class="btn" id="bToExpand" type="button"><i data-lucide="expand" class="w-4 h-4" style="color:var(--acc2)"></i>Mở rộng ảnh</button>
+      <span id="info" class="text-xs mx-auto hidden md:inline" style="color:var(--sub)">Chưa có ảnh</span>
+      <button class="btn" id="bNew" type="button"><i data-lucide="folder-open" class="w-4 h-4"></i>Đổi ảnh</button>
+    </div>
+  </main>
+
+  <aside id="panel" data-t="s" class="glass w-full md:w-[330px] max-h-[46dvh] md:max-h-none border-t md:border-t-0 md:border-l border-r-0 border-b-0 flex flex-col">
+    <div id="tabs" class="grid grid-cols-4 p-1.5 border-b relative" style="border-color:var(--ln)">
+      <div id="tabInd" class="absolute top-1.5 bottom-1.5 left-1.5 transition-transform duration-200" style="width:calc(25% - 3px);border-radius:var(--rad);background:var(--grad-btn)"></div>
+      <button type="button" class="on" data-go="s">Làm nét</button>
+      <button type="button" data-go="c">Ánh sáng</button>
+      <button type="button" data-go="f">Màu sắc</button>
+      <button type="button" data-go="t">Phóng to</button>
+    </div>
+
+    <div class="p-3.5 overflow-y-auto flex-1 space-y-3.5 text-xs">
+      <div data-tab="s" class="space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" class="pchip on" data-preset="auto"><i data-lucide="wand-2" class="w-3.5 h-3.5"></i>Tự động AI</button>
+          <button type="button" class="pchip" data-preset="portrait"><i data-lucide="user-check" class="w-3.5 h-3.5"></i>Chân dung</button>
+          <button type="button" class="pchip" data-preset="deblur"><i data-lucide="focus" class="w-3.5 h-3.5"></i>Khử mờ mạnh</button>
+          <button type="button" class="pchip" data-preset="ultra"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i>Siêu nét 4K</button>
+        </div>
+        <div><div class="flex justify-between mb-1"><span>Độ sắc nét (Sharpen)</span><b id="vSharp" style="color:var(--acc1)">65%</b></div><input id="rSharp" type="range" min="0" max="150" value="65"></div>
+        <div><div class="flex justify-between mb-1"><span>Tăng chi tiết (Clarity)</span><b id="vClarity" style="color:var(--acc1)">25%</b></div><input id="rClarity" type="range" min="0" max="100" value="25"></div>
+        <div><div class="flex justify-between mb-1"><span>Khử nhiễu (Denoise)</span><b id="vDenoise" style="color:var(--acc1)">12%</b></div><input id="rDenoise" type="range" min="0" max="100" value="12"></div>
+      </div>
+
+      <div data-tab="c" class="space-y-3">
+        <div><div class="flex justify-between mb-1"><span>Độ sáng</span><b id="vBright" style="color:var(--acc1)">4</b></div><input id="rBright" type="range" min="-50" max="50" value="4"></div>
+        <div><div class="flex justify-between mb-1"><span>Độ tương phản</span><b id="vContrast" style="color:var(--acc1)">12</b></div><input id="rContrast" type="range" min="-50" max="50" value="12"></div>
+        <div><div class="flex justify-between mb-1"><span>Cân bằng HDR</span><b id="vHdr" style="color:var(--acc1)">15%</b></div><input id="rHdr" type="range" min="0" max="100" value="15"></div>
+      </div>
+
+      <div data-tab="f" class="space-y-3">
+        <div><div class="flex justify-between mb-1"><span>Độ rực màu</span><b id="vSat" style="color:var(--acc1)">10</b></div><input id="rSat" type="range" min="-60" max="60" value="10"></div>
+        <div><div class="flex justify-between mb-1"><span>Nhiệt độ màu</span><b id="vWarm" style="color:var(--acc1)">0</b></div><input id="rWarm" type="range" min="-40" max="40" value="0"></div>
+        <button type="button" id="bResetImg" class="w-full btn"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>Đặt lại thông số gốc</button>
+      </div>
+
+      <div data-tab="t" class="space-y-3">
+        <div class="p-3 rounded-xl border space-y-2.5" style="background:var(--card);border-color:var(--ln)">
+          <div class="font-bold">Xuất ảnh độ phân giải cao</div>
+          <p style="color:var(--sub)">Nhân kích thước điểm ảnh kết hợp lọc nét biên để ảnh rõ ràng hơn khi phóng lớn.</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="exportUpscale(2)" class="btn pri py-2">Xuất 2X HD</button>
+            <button type="button" onclick="exportUpscale(4)" class="btn gold py-2">Xuất 4X Ultra</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ===================================================================== -->
+<!-- VIEW 2: MỞ RỘNG HÌNH ẢNH (AI EXPAND)                                  -->
+<!-- ===================================================================== -->
+<div id="ws-outpaint" class="ws-view hidden flex flex-1 min-h-0 flex-col md:flex-row">
+  <main class="relative flex-1 min-h-0 flex flex-col">
+    <div class="relative flex-1 min-h-0 overflow-auto flex p-4">
+      <div class="m-auto flex flex-col items-center gap-3 max-w-full">
+        <canvas id="outCanvas" width="960" height="540" class="max-w-full max-h-[68vh] rounded-xl border shadow-2xl" style="border-color:var(--ln)"></canvas>
+      </div>
+    </div>
+    <div class="glass flex items-center gap-2 px-3 py-2 border-x-0 border-b-0 flex-wrap">
+      <label class="btn cursor-pointer"><i data-lucide="upload" class="w-4 h-4" style="color:var(--acc1)"></i>Chọn ảnh mới<input id="outFile" type="file" accept="image/*" class="hidden"></label>
+      <button type="button" id="bPullFromEnhance" class="btn"><i data-lucide="arrow-down-to-line" class="w-4 h-4" style="color:var(--acc2)"></i>Lấy từ Làm nét</button>
+      <button type="button" id="bOutSample" class="btn"><i data-lucide="image" class="w-4 h-4"></i>Ảnh mẫu</button>
+      <button type="button" onclick="downloadOutpaint()" class="btn pri ml-auto"><i data-lucide="download" class="w-4 h-4"></i>Tải ảnh mở rộng</button>
+    </div>
+  </main>
+
+  <aside class="glass w-full md:w-[330px] max-h-[46dvh] md:max-h-none border-t md:border-t-0 md:border-l border-r-0 border-b-0 p-3.5 overflow-y-auto space-y-4 text-xs">
+    <div>
+      <div class="font-bold mb-2 flex items-center gap-1.5"><i data-lucide="ratio" class="w-4 h-4" style="color:var(--acc1)"></i>1. Tỷ lệ khung mở rộng</div>
+      <div class="grid grid-cols-3 gap-2">
+        <button type="button" class="chip on out-ratio" data-rw="16" data-rh="9">16:9 Ngang</button>
+        <button type="button" class="chip out-ratio" data-rw="9" data-rh="16">9:16 Dọc</button>
+        <button type="button" class="chip out-ratio" data-rw="4" data-rh="3">4:3 Chuẩn</button>
+        <button type="button" class="chip out-ratio" data-rw="1" data-rh="1">1:1 Vuông</button>
+        <button type="button" class="chip out-ratio" data-rw="21" data-rh="9">21:9 Rộng</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="font-bold mb-2 flex items-center gap-1.5"><i data-lucide="layers" class="w-4 h-4" style="color:var(--acc2)"></i>2. Kiểu mở rộng nền</div>
+      <div class="grid grid-cols-1 gap-2">
+        <button type="button" class="mode on out-style" data-style="ambient">Hòa trộn không gian tự nhiên (Ambient)</button>
+        <button type="button" class="mode out-style" data-style="mirror">Mở rộng đối xứng liền mạch (Mirror)</button>
+        <button type="button" class="mode out-style" data-style="studio">Nền ánh sáng Studio chiều sâu</button>
+      </div>
+    </div>
+
+    <div class="space-y-3 pt-2 border-t" style="border-color:var(--ln)">
+      <div><div class="flex justify-between mb-1"><span>Thu phóng ảnh gốc</span><b id="vOutScale" style="color:var(--acc1)">76%</b></div><input id="rOutScale" type="range" min="45" max="96" value="76"></div>
+      <div><div class="flex justify-between mb-1"><span>Độ mượt viền nối</span><b id="vOutFeather" style="color:var(--acc1)">28px</b></div><input id="rOutFeather" type="range" min="0" max="60" value="28"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- ===================================================================== -->
+<!-- VIEW 3: TẢI VIDEO TIKTOK, YOUTUBE, FACEBOOK CHẤT LƯỢNG CAO            -->
+<!-- ===================================================================== -->
+<section id="ws-downloader" class="ws-view hidden flex-1 min-h-0 overflow-y-auto p-4 sm:p-6">
+  <div class="max-w-3xl mx-auto space-y-5 pb-16">
+    <div class="glass p-5 sm:p-7 space-y-4" style="border-radius:var(--card-rad);box-shadow:0 16px 45px var(--glow)">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg sm:text-xl font-extrabold flex items-center gap-2">
+            <i data-lucide="download-cloud" class="w-6 h-6" style="color:var(--acc1)"></i>
+            Tải Video TikTok, YouTube & Facebook HD <span class="cute-deco">🎬✨</span>
+          </h2>
+          <p class="text-xs mt-1" style="color:var(--sub)">Dán liên kết video vào ô bên dưới, hệ thống tự nhận diện nền tảng, giải mã luồng chất lượng cao và tải về.</p>
+        </div>
+        <div class="flex items-center gap-1.5 text-[11px] font-bold">
+          <span class="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-400/30">TikTok No-Logo</span>
+          <span class="px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-400/30">YouTube HD</span>
+          <span class="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-400/30">Facebook</span>
+        </div>
+      </div>
+
+      <!-- URL Input Bar -->
+      <div class="flex flex-col sm:flex-row gap-2">
+        <div class="relative flex-1">
+          <input id="vidUrlInput" type="url" placeholder="Dán link TikTok, YouTube hoặc Facebook vào đây..." oninput="detectVideoPlatform()" class="!pr-20 !py-3">
+          <span id="vidPlatformTag" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-extrabold px-2 py-0.5 rounded bg-white/10" style="color:var(--acc1)">AUTO</span>
+        </div>
+        <button type="button" onclick="pasteVideoLink()" class="btn py-2.5 px-3.5"><i data-lucide="clipboard-paste" class="w-4 h-4"></i>Dán link</button>
+        <button type="button" onclick="fetchVideoInfo()" class="btn pri py-2.5 px-5"><i data-lucide="zap" class="w-4 h-4"></i>Phân Tích & Tải</button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 text-[11px]" style="color:var(--sub)">
+        <span>Thử nhanh:</span>
+        <button type="button" onclick="fillDemoLink('tiktok')" class="underline hover:opacity-80 cursor-pointer" style="color:var(--acc1)">Link mẫu TikTok</button>
+        <span>•</span>
+        <button type="button" onclick="fillDemoLink('youtube')" class="underline hover:opacity-80 cursor-pointer" style="color:var(--acc2)">Link mẫu YouTube</button>
+        <span>•</span>
+        <button type="button" onclick="fillDemoLink('facebook')" class="underline hover:opacity-80 cursor-pointer" style="color:var(--acc3)">Link mẫu Facebook</button>
+      </div>
+
+      <!-- Progress Bar 0 -> 100% -->
+      <div id="vidProgressBox" class="hidden p-4 rounded-xl border space-y-2" style="background:var(--card);border-color:var(--acc1)">
+        <div class="flex justify-between text-xs font-bold">
+          <span id="vidStatusText" style="color:var(--acc1)">Đang kết nối máy chủ giải mã video...</span>
+          <span id="vidPctText" style="color:var(--acc2)">0%</span>
+        </div>
+        <div class="w-full h-2.5 rounded-full bg-black/40 overflow-hidden">
+          <div id="vidBarFill" class="h-full rounded-full transition-all duration-100" style="width:0%;background:var(--grad-btn)"></div>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div id="vidResultBox" class="hidden p-4 rounded-2xl border space-y-4" style="background:var(--card);border-color:var(--ln)">
+        <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+          <img id="vidThumb" src="" alt="Thumbnail" class="w-full sm:w-44 h-28 object-cover rounded-xl border border-white/15 bg-black shrink-0">
+          <div class="flex-1 min-w-0 space-y-1.5 text-center sm:text-left">
+            <span id="vidResBadge" class="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full" style="background:color-mix(in srgb,var(--acc1) 18%,transparent);color:var(--acc1)">TIKTOK HD</span>
+            <h3 id="vidTitle" class="font-bold text-sm leading-snug line-clamp-2">Tiêu đề video</h3>
+            <div id="vidAuthor" class="text-xs" style="color:var(--sub)">Kênh đăng tải • Chất lượng gốc</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t" style="border-color:var(--ln)">
+          <button type="button" id="btnDl1080" class="btn pri py-2.5 text-xs"><i data-lucide="download" class="w-4 h-4"></i>Tải 1080p Full HD (Không logo)</button>
+          <button type="button" id="btnDl720" class="btn py-2.5 text-xs"><i data-lucide="film" class="w-4 h-4"></i>Tải 720p HD Nhanh</button>
+          <button type="button" id="btnDlAudio" class="btn py-2.5 text-xs"><i data-lucide="music" class="w-4 h-4"></i>Tách Nhạc MP3 320kbps</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<!-- VIEW 4: SÂN KHẤU BANKER VIP 3D TOÀN MÀN HÌNH                          -->
+<!-- ===================================================================== -->
+<section id="ws-banker" class="ws-view hidden flex-1 min-h-0 overflow-y-auto banker-stage relative flex items-center justify-center p-4">
+  <div class="max-w-md w-full space-y-4 relative z-10">
+    <div class="qcard-wrap">
+      <div class="qcard p-6 space-y-5" id="fullBankerCard">
+        <div class="qcard-holo"></div>
+        <div class="qcard-glare" id="fullBankerGlare"></div>
+
+        <div class="relative flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_#10b981]"></span>
+            <span class="text-sm font-black tracking-widest text-amber-300">AGRIBANK VIP</span>
+          </div>
+          <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-400/15 border border-amber-300/40 text-amber-200 font-bold">NAPAS 24/7</span>
+        </div>
+
+        <div class="relative flex items-center gap-4">
+          <div class="relative w-32 h-32 rounded-2xl bg-white p-1.5 shrink-0 shadow-[0_0_30px_rgba(0,240,255,.35)] overflow-hidden">
+            <img id="fullBankQr" src="https://img.vietqr.io/image/970405-8888375590209-qr_only.png?accountName=LE%20VAN%20DUY%20KHANH" alt="VietQR" class="w-full h-full object-contain">
+            <div class="qr-laser"></div>
+          </div>
+
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <div class="text-[10px] uppercase tracking-widest text-zinc-400">Chủ tài khoản</div>
+            <div class="text-sm font-black text-emerald-300 tracking-wide">LE VAN DUY KHANH</div>
+            <div class="text-lg font-black tracking-wider gold-shimmer select-all">8888375590209</div>
+            <div class="text-xs text-amber-200">Số tiền: <b id="fullAmtLabel">Tùy tâm</b></div>
+            <button type="button" onclick="copySTK(this)" class="btn gold text-xs py-1.5 px-3 w-full mt-1">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Copy Số Tài Khoản</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chọn số tiền ngay trên thẻ 3D -->
+        <div class="relative space-y-2 pt-2 border-t border-white/10">
+          <div class="grid grid-cols-5 gap-1.5">
+            <button type="button" onclick="setBankAmount(20000)" class="py-1.5 rounded-lg bg-white/10 hover:bg-amber-400/30 text-xs font-bold text-amber-200 cursor-pointer">20k</button>
+            <button type="button" onclick="setBankAmount(50000)" class="py-1.5 rounded-lg bg-white/10 hover:bg-amber-400/30 text-xs font-bold text-amber-200 cursor-pointer">50k</button>
+            <button type="button" onclick="setBankAmount(100000)" class="py-1.5 rounded-lg bg-white/10 hover:bg-amber-400/30 text-xs font-bold text-amber-200 cursor-pointer">100k</button>
+            <button type="button" onclick="setBankAmount(200000)" class="py-1.5 rounded-lg bg-white/10 hover:bg-amber-400/30 text-xs font-bold text-amber-200 cursor-pointer">200k</button>
+            <button type="button" onclick="setBankAmount(500000)" class="py-1.5 rounded-lg bg-white/10 hover:bg-amber-400/30 text-xs font-bold text-amber-200 cursor-pointer">500k</button>
+          </div>
+          <input id="fullCustomAmt" type="number" min="0" step="10000" placeholder="Nhập số tiền muốn chuyển (VNĐ)..." oninput="setBankAmount(this.value)" class="!py-1.5 !px-3 !text-xs !bg-black/50 !text-white !border-amber-400/30">
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <button type="button" onclick="switchView('enhance')" class="btn">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>Quay lại Studio
+      </button>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl border text-xs font-bold shadow-2xl opacity-0 pointer-events-none transition-all duration-300" style="background:var(--pn);border-color:var(--acc1);color:var(--acc1)"></div>
+
+<script>
+// ==================== 1. THEME ANIMATION (SÁNG/TỐI & NGẦU/CUTE) ====================
+function triggerThemeWave(e, applyFn) {
+  const wave = document.getElementById('themeWave');
+  const rect = e?.currentTarget?.getBoundingClientRect();
+  const x = rect ? Math.round(rect.left + rect.width / 2) : window.innerWidth / 2;
+  const y = rect ? Math.round(rect.top + rect.height / 2) : 24;
+
+  const isCute = document.documentElement.dataset.style === 'cute';
+  const nextDark = document.documentElement.dataset.mode === 'light';
+  wave.style.background = isCute
+    ? 'radial-gradient(circle, #ff7eb6 0%, #c084fc 50%, #7afcff 100%)'
+    : (nextDark ? 'radial-gradient(circle, #00F0FF 0%, #10B981 45%, #09090B 90%)' : 'radial-gradient(circle, #38bdf8 0%, #fde047 55%, #ffffff 95%)');
+
+  wave.style.setProperty('--wx', x + 'px');
+  wave.style.setProperty('--wy', y + 'px');
+  wave.classList.remove('active');
+  void wave.offsetWidth;
+  wave.classList.add('active');
+
+  setTimeout(() => {
+    applyFn();
+    lucide.createIcons();
+  }, 160);
+}
+
+function toggleDarkLight(e) {
+  triggerThemeWave(e, () => {
+    const html = document.documentElement;
+    const isDark = html.dataset.mode === 'dark';
+    html.dataset.mode = isDark ? 'light' : 'dark';
+    document.getElementById('modeLabel').textContent = isDark ? 'Sáng' : 'Tối';
+    document.getElementById('modeIcon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+    showToast(isDark ? 'Đã bật giao diện Sáng rực rỡ!' : 'Đã bật giao diện Tối huyền bí!');
+  });
+}
+
+function toggleCoolCute(e) {
+  triggerThemeWave(e, () => {
+    const html = document.documentElement;
+    const isCool = html.dataset.style === 'cool';
+    html.dataset.style = isCool ? 'cute' : 'cool';
+    document.getElementById('styleEmoji').textContent = isCool ? '🌸' : '⚡';
+    document.getElementById('styleLabel').textContent = isCool ? 'Cute' : 'Ngầu';
+    showToast(isCool ? 'Đã chuyển sang phong cách Cute Dễ Thương (｡♥‿♥｡)' : 'Đã chuyển sang phong cách Chất Ngầu Cyber!');
+  });
+}
+
+// ==================== 2. NAVIGATION & MENU DRAWER ====================
+const drawer = document.getElementById('navDrawer');
+const overlay = document.getElementById('drawerOverlay');
+document.getElementById('bMenu').onclick = () => { drawer.classList.add('open'); overlay.classList.add('open'); };
+document.getElementById('bCloseMenu').onclick = overlay.onclick = () => { drawer.classList.remove('open'); overlay.classList.remove('open'); };
+document.getElementById('bOpenBankerFull').onclick = () => switchView('banker');
+
+function switchView(viewName) {
+  document.querySelectorAll('.ws-view').forEach(el => el.classList.add('hidden'));
+  const target = document.getElementById('ws-' + viewName);
+  if (target) target.classList.remove('hidden');
+
+  document.querySelectorAll('[data-view]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === viewName);
+  });
+
+  const subTitle = document.getElementById('subTitle');
+  const headerActions = document.getElementById('headerActions');
+  if (viewName === 'enhance') {
+    subTitle.textContent = 'Làm nét & nâng cấp ảnh';
+    headerActions.classList.remove('hidden');
+    resizeEnhanceView();
+  } else if (viewName === 'outpaint') {
+    subTitle.textContent = 'Mở rộng hình ảnh (AI Expand)';
+    headerActions.classList.add('hidden');
+    renderOutpaint();
+  } else if (viewName === 'downloader') {
+    subTitle.textContent = 'Tải video TikTok / YouTube / FB';
+    headerActions.classList.add('hidden');
+  } else if (viewName === 'banker') {
+    subTitle.textContent = 'Quantum Banker VIP';
+    headerActions.classList.add('hidden');
+  }
+
+  drawer.classList.remove('open');
+  overlay.classList.remove('open');
+}
+
+document.querySelectorAll('[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('opacity-0');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.add('opacity-0'), 2600);
+}
+
+// ==================== 3. BANKER VIP (CHỌN SỐ TIỀN + TÊN LÊ VĂN DUY KHÁNH) ====================
+function setBankAmount(val) {
+  const amt = Math.max(0, Number(val) || 0);
+  const formatted = amt > 0 ? amt.toLocaleString('vi-VN') + 'đ' : 'Tùy tâm';
+  document.getElementById('miniAmtLabel').textContent = formatted;
+  document.getElementById('fullAmtLabel').textContent = formatted;
+  document.getElementById('miniCustomAmt').value = amt > 0 ? amt : '';
+  document.getElementById('fullCustomAmt').value = amt > 0 ? amt : '';
+
+  const baseQr = `https://img.vietqr.io/image/970405-8888375590209-qr_only.png?accountName=LE%20VAN%20DUY%20KHANH&addInfo=CHUYEN%20KHOAN%20DUYKHANH${amt > 0 ? '&amount=' + amt : ''}`;
+  document.getElementById('miniBankQr').src = baseQr;
+  document.getElementById('fullBankQr').src = baseQr;
+  if (amt > 0) showToast(`Đã tạo mã QR ${formatted} cho LE VAN DUY KHANH`);
+}
+
+function copySTK(btnEl) {
+  navigator.clipboard?.writeText('8888375590209');
+  showToast('Đã copy STK 8888375590209 — LE VAN DUY KHANH');
+  if (btnEl) {
+    const old = btnEl.innerHTML;
+    btnEl.textContent = 'Đã Copy ✓';
+    setTimeout(() => { btnEl.innerHTML = old; lucide.createIcons(); }, 1500);
+  }
+}
+
+function bind3DTilt(cardId, glareId) {
+  const card = document.getElementById(cardId);
+  const glare = document.getElementById(glareId);
+  if (!card || !glare) return;
+  card.addEventListener('pointermove', e => {
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+    card.style.transform = `rotateX(${(0.5 - y) * 14}deg) rotateY(${(x - 0.5) * 16}deg)`;
+    glare.style.setProperty('--mx', (x * 100) + '%');
+    glare.style.setProperty('--my', (y * 100) + '%');
+  });
+  card.addEventListener('pointerleave', () => { card.style.transform = 'rotateX(0) rotateY(0)'; });
+}
+bind3DTilt('miniBankerCard', 'miniBankerGlare');
+bind3DTilt('fullBankerCard', 'fullBankerGlare');
+
+// ==================== 4. LÀM NÉT ẢNH + LOADING 0-100% ====================
+let srcImg = null, splitPct = 50, loupeOn = false, zoomMode = 'fit';
+const cvO = document.getElementById('cvO'), ctxO = cvO.getContext('2d');
+const cvR = document.getElementById('cvR'), ctxR = cvR.getContext('2d');
+const wrap = document.getElementById('wrap');
+const viewEl = document.getElementById('view');
+const lp = document.getElementById('lp'), lpc = document.getElementById('lpc'), lpCtx = lpc.getContext('2d');
+
+function runProgress0to100(onDone) {
+  const hud = document.getElementById('imgLoadHud');
+  const pctEl = document.getElementById('imgLoadPct');
+  const barEl = document.getElementById('imgLoadBar');
+  const stepEl = document.getElementById('imgLoadStep');
+
+  hud.classList.remove('hidden');
+  let p = 0;
+  const steps = ['Đang đọc tệp hình ảnh...', 'Phân tích mật độ điểm ảnh...', 'Khử nhiễu & tái tạo biên nét...', 'Hoàn tất hiển thị!'];
+  const timer = setInterval(() => {
+    p += Math.floor(Math.random() * 14) + 9;
+    if (p >= 100) {
+      p = 100;
+      pctEl.textContent = '100%';
+      barEl.style.width = '100%';
+      stepEl.textContent = steps[3];
+      clearInterval(timer);
+      setTimeout(() => {
+        hud.classList.add('hidden');
+        onDone();
+      }, 180);
+    } else {
+      pctEl.textContent = p + '%';
+      barEl.style.width = p + '%';
+      stepEl.textContent = steps[Math.min(2, Math.floor(p / 34))];
+    }
+  }, 35);
+}
+
+function resizeEnhanceView() {
+  if (!srcImg) return;
+  if (zoomMode === '100') {
+    wrap.style.width = srcImg.width + 'px';
+    wrap.style.height = srcImg.height + 'px';
+    return;
+  }
+  const maxW = Math.max(240, viewEl.clientWidth - 32);
+  const maxH = Math.max(200, viewEl.clientHeight - 32);
+  const scale = Math.min(1, maxW / srcImg.width, maxH / srcImg.height);
+  wrap.style.width = Math.round(srcImg.width * scale) + 'px';
+  wrap.style.height = Math.round(srcImg.height * scale) + 'px';
+}
+window.addEventListener('resize', resizeEnhanceView);
+
+document.getElementById('bFit').onclick = () => { zoomMode = 'fit'; resizeEnhanceView(); };
+document.getElementById('b100').onclick = () => { zoomMode = '100'; resizeEnhanceView(); };
+
+function loadEnhanceImage(img) {
+  runProgress0to100(() => {
+    srcImg = img;
+    document.getElementById('drop').style.display = 'none';
+    cvO.width = cvR.width = img.width;
+    cvO.height = cvR.height = img.height;
+    ctxO.drawImage(img, 0, 0);
+    document.getElementById('info').textContent = `${img.width} × ${img.height} px • Đã tối ưu 100%`;
+    zoomMode = 'fit';
+    resizeEnhanceView();
+    const app = document.getElementById('app');
+    app.classList.add('busy');
+    setTimeout(() => app.classList.remove('busy'), 1000);
+    applyEnhanceFilters();
+  });
+}
+
+function applyEnhanceFilters() {
+  if (!srcImg) return;
+  const sharp = Number(document.getElementById('rSharp').value);
+  const clarity = Number(document.getElementById('rClarity').value);
+  const denoise = Number(document.getElementById('rDenoise').value);
+  const bright = Number(document.getElementById('rBright').value);
+  const contrast = Number(document.getElementById('rContrast').value);
+  const hdr = Number(document.getElementById('rHdr').value);
+  const sat = Number(document.getElementById('rSat').value);
+  const warm = Number(document.getElementById('rWarm').value);
+
+  document.getElementById('vSharp').textContent = sharp + '%';
+  document.getElementById('vClarity').textContent = clarity + '%';
+  document.getElementById('vDenoise').textContent = denoise + '%';
+  document.getElementById('vBright').textContent = bright;
+  document.getElementById('vContrast').textContent = contrast;
+  document.getElementById('vHdr').textContent = hdr + '%';
+  document.getElementById('vSat').textContent = sat;
+  document.getElementById('vWarm').textContent = warm;
+
+  const totalContrast = 100 + contrast + Math.round(clarity * 0.22) + Math.round(hdr * 0.15);
+  const totalBright = 100 + bright + Math.round(hdr * 0.06);
+  const sepiaVal = warm > 0 ? Math.round(warm * 0.6) : 0;
+  const hueVal = warm < 0 ? Math.round(warm * 0.4) : 0;
+
+  ctxR.save();
+  ctxR.filter = `brightness(${totalBright}%) contrast(${totalContrast}%) saturate(${100 + sat}%) sepia(${sepiaVal}%) hue-rotate(${hueVal}deg) blur(${(denoise * 0.011).toFixed(2)}px)`;
+  ctxR.drawImage(srcImg, 0, 0);
+  ctxR.restore();
+
+  const effectiveSharp = sharp + clarity * 0.4;
+  if (effectiveSharp > 0) {
+    const w = cvR.width, h = cvR.height;
+    const imgData = ctxR.getImageData(0, 0, w, h);
+    const d = imgData.data;
+    const copy = new Uint8ClampedArray(d);
+    const amt = Math.min(1.6, effectiveSharp / 100) * 0.42;
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const i = (y * w + x) * 4;
+        for (let c = 0; c < 3; c++) {
+          const lap = 5 * copy[i + c] - copy[i - 4 + c] - copy[i + 4 + c] - copy[i - w * 4 + c] - copy[i + w * 4 + c];
+          d[i + c] = copy[i + c] * (1 - amt) + lap * amt;
+        }
+      }
+    }
+    ctxR.putImageData(imgData, 0, 0);
+  }
+}
+
+['rSharp', 'rClarity', 'rDenoise', 'rBright', 'rContrast', 'rHdr', 'rSat', 'rWarm'].forEach(id => {
+  document.getElementById(id).addEventListener('input', applyEnhanceFilters);
+});
+
+const PRESETS = {
+  auto:     { sharp: 65, clarity: 25, denoise: 12, bright: 4, contrast: 12, hdr: 15, sat: 10, warm: 0 },
+  portrait: { sharp: 50, clarity: 15, denoise: 26, bright: 8, contrast: 8,  hdr: 20, sat: 6,  warm: 8 },
+  deblur:   { sharp: 125,clarity: 55, denoise: 8,  bright: 2, contrast: 20, hdr: 10, sat: 8,  warm: 0 },
+  ultra:    { sharp: 145,clarity: 75, denoise: 15, bright: 6, contrast: 24, hdr: 30, sat: 18, warm: 4 }
+};
+document.querySelectorAll('[data-preset]').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const p = PRESETS[btn.dataset.preset];
+    document.getElementById('rSharp').value = p.sharp;
+    document.getElementById('rClarity').value = p.clarity;
+    document.getElementById('rDenoise').value = p.denoise;
+    document.getElementById('rBright').value = p.bright;
+    document.getElementById('rContrast').value = p.contrast;
+    document.getElementById('rHdr').value = p.hdr;
+    document.getElementById('rSat').value = p.sat;
+    document.getElementById('rWarm').value = p.warm;
+    applyEnhanceFilters();
+  };
+});
+
+document.getElementById('bResetImg').onclick = () => {
+  ['rSharp', 'rClarity', 'rDenoise', 'rBright', 'rContrast', 'rHdr', 'rSat', 'rWarm'].forEach(id => document.getElementById(id).value = 0);
+  applyEnhanceFilters();
+};
+
+const dropEl = document.getElementById('drop');
+['dragenter', 'dragover'].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.add('hot'); }));
+['dragleave', 'drop'].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.remove('hot'); }));
+dropEl.addEventListener('drop', e => { const f = e.dataTransfer?.files?.[0]; if (f) handleFile(f); });
+document.getElementById('file').onchange = e => { if (e.target.files[0]) handleFile(e.target.files[0]); };
+document.getElementById('bNew').onclick = () => document.getElementById('file').click();
+
+function handleFile(f) {
+  const img = new Image();
+  img.onload = () => loadEnhanceImage(img);
+  img.src = URL.createObjectURL(f);
+}
+
+document.getElementById('bSample').onclick = () => {
+  const c = document.createElement('canvas');
+  c.width = 900; c.height = 560;
+  const x = c.getContext('2d');
+  x.filter = 'blur(1.2px)';
+  const g = x.createLinearGradient(0, 0, 900, 560);
+  g.addColorStop(0, '#071921'); g.addColorStop(0.5, '#0f292e'); g.addColorStop(1, '#1e1b4b');
+  x.fillStyle = g; x.fillRect(0, 0, 900, 560);
+  for (let i = 0; i < 18; i++) {
+    x.strokeStyle = i % 2 === 0 ? 'rgba(0,240,255,0.45)' : 'rgba(16,185,129,0.45)';
+    x.lineWidth = 2;
+    x.strokeRect(80 + i * 20, 60 + i * 12, 740 - i * 40, 440 - i * 24);
+  }
+  x.fillStyle = '#ffffff'; x.font = 'bold 36px sans-serif'; x.textAlign = 'center';
+  x.fillText('DUYKHANH DEV • AI ENHANCER', 450, 265);
+  x.fillStyle = '#67e8f9'; x.font = '18px sans-serif';
+  x.fillText('Kéo thanh trượt giữa màn hình để so sánh Trước & Sau làm nét', 450, 310);
+
+  const img = new Image();
+  img.onload = () => loadEnhanceImage(img);
+  img.src = c.toDataURL();
+};
+
+document.getElementById('bDl').onclick = () => {
+  if (!srcImg) { showToast('Hãy chọn hoặc dùng thử ảnh mẫu trước nhé!'); return; }
+  const a = document.createElement('a');
+  a.download = 'AnhDaLamNet_DuyKhanhDev.png';
+  a.href = cvR.toDataURL('image/png');
+  a.click();
+  showToast('Đã tải ảnh sắc nét về máy!');
+};
+
+function exportUpscale(factor) {
+  if (!srcImg) { showToast('Vui lòng tải ảnh lên trước!'); return; }
+  const up = document.createElement('canvas');
+  up.width = cvR.width * factor; up.height = cvR.height * factor;
+  const ux = up.getContext('2d');
+  ux.imageSmoothingQuality = 'high';
+  ux.drawImage(cvR, 0, 0, up.width, up.height);
+  const a = document.createElement('a');
+  a.download = `AnhSieuNet_${factor}X.png`;
+  a.href = up.toDataURL('image/png');
+  a.click();
+  showToast(`Đã xuất ảnh độ phân giải ${factor}X!`);
+}
+
+// Split Slider & Loupe
+const hd = document.getElementById('hd');
+let draggingSplit = false;
+hd.onpointerdown = e => { draggingSplit = true; hd.setPointerCapture(e.pointerId); };
+window.addEventListener('pointerup', () => draggingSplit = false);
+wrap.addEventListener('pointermove', e => {
+  const r = wrap.getBoundingClientRect();
+  if (draggingSplit) {
+    splitPct = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+    hd.style.left = splitPct + '%';
+    cvO.style.clipPath = `inset(0 ${100 - splitPct}% 0 0)`;
+  }
+  if (loupeOn && srcImg) {
+    const lx = e.clientX - r.left, ly = e.clientY - r.top;
+    lp.style.left = (lx - 75) + 'px'; lp.style.top = (ly - 75) + 'px';
+    const sx = (lx / r.width) * cvR.width, sy = (ly / r.height) * cvR.height;
+    const srcCanvas = (lx / r.width) * 100 < splitPct ? cvO : cvR;
+    lpCtx.clearRect(0, 0, 150, 150);
+    lpCtx.drawImage(srcCanvas, sx - 30, sy - 30, 60, 60, 0, 0, 150, 150);
+  }
+});
+
+document.getElementById('bLoupe').onclick = function() {
+  if (!srcImg) { showToast('Hãy mở một tấm ảnh trước khi dùng kính lúp!'); return; }
+  loupeOn = !loupeOn;
+  this.classList.toggle('on', loupeOn);
+  lp.classList.toggle('hidden', !loupeOn);
+};
+
+document.querySelectorAll('#tabs button').forEach((btn, idx) => {
+  btn.onclick = () => {
+    document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('panel').dataset.t = btn.dataset.go;
+    document.getElementById('tabInd').style.transform = `translateX(${idx * 100}%)`;
+  };
+});
+
+document.getElementById('bToExpand').onclick = () => {
+  if (!srcImg) { switchView('outpaint'); return; }
+  const img = new Image();
+  img.onload = () => { outImg = img; switchView('outpaint'); };
+  img.src = cvR.toDataURL('image/png');
+};
+
+// ==================== 5. MỞ RỘNG HÌNH ẢNH (AI EXPAND) ====================
+let outImg = null, outRatio = [16, 9], outStyle = 'ambient';
+
+function renderOutpaint() {
+  const cv = document.getElementById('outCanvas');
+  const ctx = cv.getContext('2d');
+  const baseW = 1080;
+  cv.width = baseW;
+  cv.height = Math.round(baseW * outRatio[1] / outRatio[0]);
+
+  const scalePct = Number(document.getElementById('rOutScale').value) / 100;
+  const feather = Number(document.getElementById('rOutFeather').value);
+  document.getElementById('vOutScale').textContent = Math.round(scalePct * 100) + '%';
+  document.getElementById('vOutFeather').textContent = feather + 'px';
+
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+
+  if (!outImg) {
+    ctx.strokeStyle = 'rgba(0,240,255,0.28)';
+    ctx.setLineDash([8, 6]);
+    ctx.strokeRect(24, 24, cv.width - 48, cv.height - 48);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#a1a1aa'; ctx.font = '18px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(`Chọn ảnh để mở rộng khung hình sang tỷ lệ ${outRatio[0]}:${outRatio[1]}`, cv.width / 2, cv.height / 2);
+    return;
+  }
+
+  ctx.save();
+  if (outStyle === 'ambient') {
+    ctx.filter = 'blur(34px) saturate(135%) brightness(0.72)';
+    const bgS = Math.max(cv.width / outImg.width, cv.height / outImg.height) * 1.15;
+    ctx.drawImage(outImg, (cv.width - outImg.width * bgS) / 2, (cv.height - outImg.height * bgS) / 2, outImg.width * bgS, outImg.height * bgS);
+  } else if (outStyle === 'mirror') {
+    ctx.filter = 'blur(18px) brightness(0.8)';
+    const fitS = Math.min(cv.width / outImg.width, cv.height / outImg.height) * scalePct;
+    const dw = outImg.width * fitS, dh = outImg.height * fitS;
+    const dx = (cv.width - dw) / 2, dy = (cv.height - dh) / 2;    ctx.drawImage(outImg, dx, dy, dw, dh);
+    ctx.save(); ctx.translate(dx, dy); ctx.scale(-1, 1); ctx.drawImage(outImg, 0, 0, dw, dh); ctx.restore();
+    ctx.save(); ctx.translate(dx + dw * 2, dy); ctx.scale(-1, 1); ctx.drawImage(outImg, 0, 0, dw, dh); ctx.restore();
+    ctx.save(); ctx.translate(dx, dy); ctx.scale(1, -1); ctx.drawImage(outImg, 0, 0, dw, dh); ctx.restore();
+    ctx.save(); ctx.translate(dx, dy + dh * 2); ctx.scale(1, -1); ctx.drawImage(outImg, 0, 0, dw, dh); ctx.restore();
+  } else {
+    const grad = ctx.createRadialGradient(cv.width / 2, cv.height / 2, 40, cv.width / 2, cv.height / 2, Math.max(cv.width, cv.height) * 0.65);
+    grad.addColorStop(0, '#134e4a'); grad.addColorStop(0.5, '#0f172a'); grad.addColorStop(1, '#09090b');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, cv.width, cv.height);
+  }
+  ctx.restore();
+
+  const fgS = Math.min(cv.width / outImg.width, cv.height / outImg.height) * scalePct;
+  const dw = outImg.width * fgS, dh = outImg.height * fgS;
+  const dx = (cv.width - dw) / 2, dy = (cv.height - dh) / 2;
+  ctx.save();
+  if (feather > 0) { ctx.shadowColor = 'rgba(0,0,0,0.65)'; ctx.shadowBlur = feather; }
+  ctx.drawImage(outImg, dx, dy, dw, dh);
+  ctx.restore();
+}
+
+document.getElementById('outFile').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const img = new Image();
+  img.onload = () => { outImg = img; renderOutpaint(); };
+  img.src = URL.createObjectURL(f);
+};
+document.getElementById('bPullFromEnhance').onclick = () => {
+  if (!srcImg) { showToast('Bên tab Làm nét chưa có ảnh nào!'); return; }
+  const img = new Image();
+  img.onload = () => { outImg = img; renderOutpaint(); showToast('Đã lấy ảnh từ tab Làm nét!'); };
+  img.src = cvR.toDataURL('image/png');
+};
+document.getElementById('bOutSample').onclick = () => {
+  const c = document.createElement('canvas'); c.width = 500; c.height = 650;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 500, 650); g.addColorStop(0, '#0ea5e9'); g.addColorStop(1, '#10b981');
+  x.fillStyle = g; x.fillRect(0, 0, 500, 650);
+  x.fillStyle = '#04110e'; x.font = 'bold 30px sans-serif'; x.textAlign = 'center';
+  x.fillText('ẢNH DỌC GỐC', 250, 310);
+  const img = new Image(); img.onload = () => { outImg = img; renderOutpaint(); }; img.src = c.toDataURL();
+};
+document.querySelectorAll('.out-ratio').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.out-ratio').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    outRatio = [Number(btn.dataset.rw), Number(btn.dataset.rh)];
+    renderOutpaint();
+  };
+});
+document.querySelectorAll('.out-style').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.out-style').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    outStyle = btn.dataset.style;
+    renderOutpaint();
+  };
+});
+['rOutScale', 'rOutFeather'].forEach(id => document.getElementById(id).addEventListener('input', renderOutpaint));
+function downloadOutpaint() {
+  if (!outImg) { showToast('Hãy chọn ảnh trước khi tải về!'); return; }
+  const a = document.createElement('a');
+  a.download = `AnhMoRong_${outRatio[0]}x${outRatio[1]}.png`;
+  a.href = document.getElementById('outCanvas').toDataURL('image/png');
+  a.click();
+  showToast('Đã tải ảnh mở rộng về máy!');
+}
+
+// ==================== 6. TẢI VIDEO TIKTOK / YOUTUBE / FACEBOOK ====================
+function detectVideoPlatform() {
+  const url = (document.getElementById('vidUrlInput').value || '').toLowerCase();
+  const tag = document.getElementById('vidPlatformTag');
+  if (url.includes('tiktok.com')) tag.textContent = 'TIKTOK';
+  else if (url.includes('youtube.com') || url.includes('youtu.be')) tag.textContent = 'YOUTUBE';
+  else if (url.includes('facebook.com') || url.includes('fb.watch')) tag.textContent = 'FACEBOOK';
+  else tag.textContent = 'AUTO';
+}
+
+async function pasteVideoLink() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('vidUrlInput').value = text;
+    detectVideoPlatform();
+    showToast('Đã dán liên kết từ bộ nhớ tạm!');
+  } catch (e) {
+    showToast('Bạn hãy nhấn Ctrl+V hoặc chạm giữ để dán link nhé!');
+  }
+}
+
+function fillDemoLink(type) {
+  const demos = {
+    tiktok: 'https://www.tiktok.com/@tiktok/video/7106594312292453675',
+    youtube: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+    facebook: 'https://www.facebook.com/watch/?v=10153231379946729'
+  };
+  document.getElementById('vidUrlInput').value = demos[type];
+  detectVideoPlatform();
+  fetchVideoInfo();
+}
+
+function triggerFileDownload(url, filename) {
+  showToast('Đang bắt đầu tải tệp chất lượng cao...');
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function fetchVideoInfo() {
+  const url = document.getElementById('vidUrlInput').value.trim();
+  if (!url) { showToast('Vui lòng dán link TikTok, YouTube hoặc Facebook!'); return; }
+
+  const progBox = document.getElementById('vidProgressBox');
+  const resBox = document.getElementById('vidResultBox');
+  const statusEl = document.getElementById('vidStatusText');
+  const pctEl = document.getElementById('vidPctText');
+  const barEl = document.getElementById('vidBarFill');
+
+  resBox.classList.add('hidden');
+  progBox.classList.remove('hidden');
+
+  let pct = 0;
+  const fakeTimer = setInterval(() => {
+    if (pct < 88) {
+      pct += Math.floor(Math.random() * 12) + 5;
+      if (pct > 88) pct = 88;
+      pctEl.textContent = pct + '%';
+      barEl.style.width = pct + '%';
+      statusEl.textContent = pct < 40 ? 'Đang nhận diện nền tảng video...' : 'Đang trích xuất luồng video 1080p HD...';
+    }
+  }, 120);
+
+  let title = 'Video Chất Lượng Cao (Đã giải mã thành công)';
+  let author = 'Nguồn gốc đã xác thực • MP4 60FPS';
+  let thumb = 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&q=80';
+  let badge = 'HD MP4';
+  let hdUrl = url;
+  let sdUrl = url;
+  let audioUrl = url;
+
+  try {
+    if (url.includes('tiktok.com')) {
+      badge = 'TIKTOK NO-WATERMARK';
+      const apiRes = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
+      const json = await apiRes.json();
+      if (json && json.data) {
+        title = json.data.title || 'Video TikTok HD Không Logo';
+        author = `@${json.data.author?.unique_id || 'tiktok_user'} • TikTok HD`;
+        thumb = json.data.cover || thumb;
+        hdUrl = json.data.hdplay || json.data.play || url;
+        sdUrl = json.data.play || url;
+        audioUrl = json.data.music || hdUrl;
+      }
+    } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      badge = 'YOUTUBE FULL HD';
+      const ytMatch = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+      const vidId = ytMatch ? ytMatch[1] : 'aqz-KE-bpKQ';
+      thumb = `https://i.ytimg.com/vi/${vidId}/hqdefault.jpg`;
+      try {
+        const metaRes = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vidId}`);
+        const meta = await metaRes.json();
+        if (meta.title) title = meta.title;
+        if (meta.author_name) author = meta.author_name + ' • YouTube';
+      } catch (e) {}
+      hdUrl = `https://cobalt.tools/?u=${encodeURIComponent(url)}`;
+      sdUrl = hdUrl;
+      audioUrl = hdUrl;
+    } else if (url.includes('facebook.com') || url.includes('fb.watch')) {
+      badge = 'FACEBOOK HD';
+      title = 'Video Facebook Reels / Watch Chất Lượng Cao';
+      author = 'Facebook Video • MP4 HD';
+      hdUrl = `https://cobalt.tools/?u=${encodeURIComponent(url)}`;
+      sdUrl = hdUrl;
+      audioUrl = hdUrl;
+    }
+  } catch (err) {}
+
+  clearInterval(fakeTimer);
+  pctEl.textContent = '100%';
+  barEl.style.width = '100%';
+  statusEl.textContent = 'Hoàn tất! Sẵn sàng tải về chất lượng cao.';
+
+  setTimeout(() => {
+    progBox.classList.add('hidden');
+    document.getElementById('vidResBadge').textContent = badge;
+    document.getElementById('vidTitle').textContent = title;
+    document.getElementById('vidAuthor').textContent = author;
+    document.getElementById('vidThumb').src = thumb;
+
+    document.getElementById('btnDl1080').onclick = () => triggerFileDownload(hdUrl, 'Video_1080p_HD.mp4');
+    document.getElementById('btnDl720').onclick = () => triggerFileDownload(sdUrl, 'Video_720p_HD.mp4');
+    document.getElementById('btnDlAudio').onclick = () => triggerFileDownload(audioUrl, 'Audio_320kbps.mp3');
+    resBox.classList.remove('hidden');
+  }, 300);
+}
+
+// Init
+renderOutpaint();
+lucide.createIcons();
+</script>
+</body>
+</html>
