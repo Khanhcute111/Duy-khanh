@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi" data-mode="dark" data-style="cool">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DuyKhanh Dev — AI Photo Studio, Video Downloader & Banker VIP</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+/* ==================== THEME VARIABLES (DARK/LIGHT × COOL/CUTE) ==================== */
+:root{
+  --bg:#09090B;--pn:rgba(18,18,22,.86);--card:#15151a;--txt:#f4f4f5;--sub:#a1a1aa;
+  --ln:rgba(255,255,255,.09);--acc1:#00F0FF;--acc2:#10B981;--acc3:#a855f7;
+  --rad:0.65rem;--card-rad:1.1rem;--glow:rgba(0,240,255,.22);
+  --grad-btn:linear-gradient(135deg,#00F0FF,#10B981);--btn-txt:#04110e;
+}
+/* 1. NGẦU + SÁNG (CYBER LIGHT) */
+html[data-mode="light"][data-style="cool"]{
+  --bg:#eef2f6;--pn:rgba(255,255,255,.88);--card:#ffffff;--txt:#0f172a;--sub:#475569;
+  --ln:rgba(15,23,42,.12);--acc1:#0284c7;--acc2:#059669;--acc3:#7c3aed;
+  --glow:rgba(2,132,199,.18);--grad-btn:linear-gradient(135deg,#0284c7,#10b981);--btn-txt:#ffffff;
+}
+/* 2. CUTE DỄ THƯƠNG + TỐI (KAWAII NIGHT) */
+html[data-mode="dark"][data-style="cute"]{
+  --bg:#16101d;--pn:rgba(33,22,44,.88);--card:#261933;--txt:#fdf2f8;--sub:#f5d0fe;
+  --ln:rgba(244,114,182,.25);--acc1:#ff7eb6;--acc2:#7afcff;--acc3:#c084fc;
+  --rad:1.15rem;--card-rad:1.6rem;--glow:rgba(255,126,182,.28);
+  --grad-btn:linear-gradient(135deg,#ff7eb6,#ff9a9e,#fecfef);--btn-txt:#2b091c;
+}
+/* 3. CUTE DỄ THƯƠNG + SÁNG (PASTEL MOCHI) */
+html[data-mode="light"][data-style="cute"]{
+  --bg:#fff5f8;--pn:rgba(255,255,255,.9);--card:#fff0f6;--txt:#4a1533;--sub:#833860;
+  --ln:rgba(244,114,182,.3);--acc1:#ec4899;--acc2:#06b6d4;--acc3:#a855f7;
+  --rad:1.15rem;--card-rad:1.6rem;--glow:rgba(236,72,153,.2);
+  --grad-btn:linear-gradient(135deg,#ff758c,#ff7eb3);--btn-txt:#ffffff;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;height:100dvh;overflow:hidden;transition:background .35s ease,color .35s ease}
+.glass{background:var(--pn);backdrop-filter:blur(16px);border:1px solid var(--ln);transition:background .35s,border-color .35s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.46rem .82rem;border-radius:var(--rad);border:1px solid var(--ln);background:var(--card);font-size:.8rem;transition:all .2s cubic-bezier(.34,1.56,.64,1);cursor:pointer;white-space:nowrap;color:var(--txt)}
+.btn:hover{border-color:var(--acc1);color:var(--acc1);transform:translateY(-1px)}
+html[data-style="cute"] .btn:hover{transform:scale(1.04) translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.pri{background:var(--grad-btn);color:var(--btn-txt);font-weight:700;border:0;box-shadow:0 4px 18px var(--glow)}
+.btn.pri:hover{color:var(--btn-txt);filter:brightness(1.08)}
+.btn.gold{background:linear-gradient(135deg,#fde047,#f59e0b,#ea580c);color:#140900;font-weight:700;border:0;box-shadow:0 0 24px rgba(245,158,11,.35)}
+.btn.gold:hover{filter:brightness(1.1);color:#140900}
+.btn.on,.mode.on,.chip.on,.pchip.on{border-color:var(--acc1);color:var(--acc1);background:color-mix(in srgb,var(--acc1) 14%,transparent);font-weight:600}
+.mode,.chip,.pchip{display:flex;align-items:center;justify-content:center;gap:.45rem;padding:.55rem .65rem;border-radius:var(--rad);border:1px solid var(--ln);background:var(--card);font-size:.76rem;cursor:pointer;transition:.18s;color:var(--txt)}
+.mode:hover,.chip:hover,.pchip:hover{border-color:var(--acc1)}
+input[type=range]{width:100%;accent-color:var(--acc1);height:4px;cursor:pointer}
+input[type=text],input[type=number],input[type=url]{background:var(--card);border:1px solid var(--ln);color:var(--txt);border-radius:var(--rad);padding:.55rem .8rem;font-size:.82rem;outline:none;transition:.2s;width:100%}
+input:focus{border-color:var(--acc1);box-shadow:0 0 0 3px var(--glow)}
+
+/* Dropzone & Scan Effects */
+#drop{border:2px dashed color-mix(in srgb,var(--acc1) 40%,transparent);border-radius:var(--card-rad);transition:.25s;overflow:hidden}
+#drop.hot,#drop:hover{border-color:var(--acc1);box-shadow:0 0 0 1px var(--acc1),0 0 40px var(--glow)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ring{animation:spin 10s linear infinite;transform-origin:20px 20px}
+.scanbar{height:3px;background:var(--ln);overflow:hidden;border-radius:4px}
+.scanbar i{display:block;height:100%;width:35%;background:linear-gradient(90deg,transparent,var(--acc1),transparent);transform:translateX(-100%)}
+.busy .scanbar i{animation:sc 1s linear infinite}
+@keyframes sc{to{transform:translateX(300%)}}
+#sweep{position:absolute;left:0;right:0;height:65px;top:-65px;background:linear-gradient(transparent,color-mix(in srgb,var(--acc1) 30%,transparent),transparent);pointer-events:none;opacity:0}
+.busy #sweep{opacity:1;animation:sw 1s ease-in-out infinite}
+@keyframes sw{to{top:100%}}
+
+canvas{display:block}
+#panel [data-tab]{display:none}
+#panel[data-t=s] [data-tab=s],#panel[data-t=c] [data-tab=c],#panel[data-t=f] [data-tab=f],#panel[data-t=t] [data-tab=t]{display:block}
+#tabs button{position:relative;z-index:1;padding:.5rem;font-size:.78rem;border-radius:var(--rad);transition:.25s;color:var(--sub);cursor:pointer}
+#tabs button.on{color:var(--btn-txt);font-weight:700}
+
+header{position:relative;z-index:30}
+header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--acc1),var(--acc2),var(--acc3),transparent);background-size:200% 100%;animation:flow 6s linear infinite}
+@keyframes flow{to{background-position:-200% 0}}
+
+/* Theme Switch Shockwave Animation */
+#themeWave{position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0}
+#themeWave.active{animation:waveBurst .75s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes waveBurst{
+  0%{opacity:.95;clip-path:circle(0px at var(--wx,50%) var(--wy,50%))}
+  70%{opacity:.85;clip-path:circle(155vmax at var(--wx,50%) var(--wy,50%))}
+  100%{opacity:0;clip-path:circle(165vmax at var(--wx,50%) var(--wy,50%))}
+}
+
+/* Cute Floating Particles */
+.cute-deco{display:none;pointer-events:none}
+html[data-style="cute"] .cute-deco{display:block}
+.float-cute{animation:floatCute 3.5s ease-in-out infinite}
+@keyframes floatCute{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(4deg)}}
+
+/* Slide-out Menu Drawer */
+#drawerOverlay{position:fixed;inset:0;background:rgba(3,3,6,.72);backdrop-filter:blur(8px);z-index:60;opacity:0;pointer-events:none;transition:opacity .28s ease}
+#drawerOverlay.open{opacity:1;pointer-events:auto}
+#navDrawer{position:fixed;top:0;left:0;bottom:0;width:360px;max-width:92vw;background:var(--pn);border-right:1px solid var(--ln);box-shadow:20px 0 60px rgba(0,0,0,.65);z-index:70;transform:translateX(-105%);transition:transform .32s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column}
+#navDrawer.open{transform:translateX(0)}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.72rem .85rem;border-radius:var(--rad);border:1px solid var(--ln);background:var(--card);transition:all .2s;cursor:pointer;text-align:left;width:100%;color:var(--txt)}
+.nav-item:hover{border-color:var(--acc1);transform:translateX(3px)}
+.nav-item.active{border-color:var(--acc1);background:color-mix(in srgb,var(--acc1) 14%,var(--card));box-shadow:0 0 20px var(--glow)}
+
+/* Quantum Banker Card */
+.banker-stage{background:radial-gradient(circle at 18% 20%,rgba(225,29,72,.22),transparent 45%),radial-gradient(circle at 82% 75%,rgba(16,185,129,.22),transparent 48%),radial-gradient(circle at 50% 45%,#13101d,#060609 78%)}
+.qcard-wrap{perspective:1400px}
+.qcard{position:relative;border-radius:22px;transform-style:preserve-3d;transition:transform .14s ease-out,box-shadow .3s ease;box-shadow:0 20px 55px rgba(0,0,0,.65),0 0 32px rgba(245,158,11,.24);border:1px solid rgba(253,224,71,.48);overflow:hidden;background:linear-gradient(135deg,#1d0b14 0%,#0f131a 52%,#081f1a 100%);color:#f4f4f5}
+.qcard::before{content:"";position:absolute;inset:-2px;border-radius:23px;padding:2px;background:conic-gradient(from var(--ang,0deg),#fde047,#10b981,#00f0ff,#f43f5e,#fde047);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;animation:rotBorder 4.5s linear infinite}
+@property --ang{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes rotBorder{to{--ang:360deg}}
+.qcard-glare{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.32) 0%,rgba(253,224,71,.16) 24%,rgba(0,240,255,.09) 45%,transparent 70%);mix-blend-mode:screen}
+.qcard-holo{position:absolute;inset:0;pointer-events:none;opacity:.25;background:repeating-linear-gradient(115deg,transparent 0%,rgba(0,240,255,.42) 12%,rgba(253,224,71,.48) 24%,rgba(244,63,94,.42) 36%,transparent 48%);background-size:250% 250%;animation:holoShift 5.5s ease-in-out infinite;mix-blend-mode:color-dodge}
+@keyframes holoShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.gold-shimmer{background:linear-gradient(90deg,#fef08a 0%,#f59e0b 25%,#ffffff 50%,#fbbf24 75%,#fef08a 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shineText 3.2s linear infinite}
+@keyframes shineText{to{background-position:200% center}}
+.emv-chip{width:34px;height:24px;border-radius:5px;background:linear-gradient(135deg,#fef08a,#d97706,#fef08a);border:1px solid rgba(255,255,255,.5);position:relative;overflow:hidden}
+.qr-laser{position:absolute;left:6%;right:6%;height:2px;background:linear-gradient(90deg,transparent,#00f0ff,#fde047,#00f0ff,transparent);box-shadow:0 0 12px #00f0ff;animation:qrScan 2.4s ease-in-out infinite}
+@keyframes qrScan{0%,100%{top:8%}50%{top:90%}}
+
+@media(prefers-reduced-motion:reduce){*,::before,::after{animation:none!important}}
+</style>
+</head>
+<body>
+<!-- FULLSCREEN THEME WAVE OVERLAY -->
+<div id="themeWave"></div>
+
+<div id="app" class="flex flex-col h-full">
+
+<!-- ==================== HEADER ==================== -->
+<header class="glass flex items-center gap-2.5 px-3 py-2 flex-wrap border-x-0 border-t-0">
+  <button id="bMenu" type="button" class="group relative flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all cursor-pointer" style="background:var(--card);border-color:var(--acc1);box-shadow:0 0 16px var(--glow)" aria-label="Mở Menu">
+    <span class="flex flex-col justify-center gap-[4px] w-4 h-4">
+      <span class="w-4 h-[2px] rounded-full transition-transform group-hover:translate-x-0.5" style="background:var(--acc1)"></span>
+      <span class="w-3 h-[2px] rounded-full transition-all group-hover:w-4" style="background:var(--acc2)"></span>
+      <span class="w-4 h-[2px] rounded-full transition-transform group-hover:-translate-x-0.5" style="background:var(--acc1)"></span>
+    </span>
+    <span class="text-xs font-bold tracking-wide">Menu</span>
+    <span class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-md" style="background:color-mix(in srgb,var(--acc1) 18%,transparent);color:var(--acc1)">Hub</span>
+  </button>
+
+  <div class="flex items-center gap-2">
+    <svg width="32" height="32" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="10" fill="#0d0d10" stroke="#00F0FF" stroke-opacity=".5"/><circle class="ring" cx="20" cy="20" r="11" fill="none" stroke="#10B981" stroke-width="1.6" stroke-dasharray="16 6"/><circle cx="20" cy="20" r="5" fill="none" stroke="#00F0FF" stroke-width="1.6"/></svg>
+    <div class="leading-tight">
+      <div class="font-bold tracking-tight text-[14px] flex items-center gap-1.5">
+        DuyKhanh Dev <span class="cute-deco float-cute text-sm">🌸✨</span>
+      </div>
+      <div id="subTitle" class="text-[11px]" style="color:var(--sub)">Làm nét & nâng cấp ảnh</div>
+    </div>
+  </div>
+
+  <!-- THEME SWITCHERS: SÁNG/TỐI & NGẦU/CUTE -->
+  <div class="flex items-center gap-1.5 ml-auto sm:mx-auto">
+    <!-- Nút Sáng / Tối -->
+    <button id="bToggleMode" type="button" onclick="toggleDarkLight(event)" class="btn text-xs font-semibold px-2.5 py-1.5" title="Chuyển giao diện Sáng / Tối">
+      <i id="modeIcon" data-lucide="moon" class="w-3.5 h-3.5 text-amber-400"></i>
+      <span id="modeLabel">Tối</span>
+    </button>
+
+    <!-- Nút Ngầu / Cute Dễ Thương -->
+    <button id="bToggleStyle" type="button" onclick="toggleCoolCute(event)" class="btn text-xs font-semibold px-2.5 py-1.5" title="Đổi phong cách Ngầu / Cute">
+      <span id="styleEmoji">⚡</span>
+      <span id="styleLabel">Ngầu</span>
+    </button>
+  </div>
+
+  <div id="headerActions" class="flex gap-2">
+    <button class="btn" id="bSample" type="button"><i data-lucide="image" class="w-4 h-4"></i><span class="hidden md:inline">Ảnh mẫu</span></button>
+    <button class="btn pri" id="bDl" type="button"><i data-lucide="download" class="w-4 h-4"></i><span class="hidden sm:inline">Tải ảnh nét</span><span class="sm:hidden">Tải</span></button>
+  </div>
+</header>
+
+<!-- ==================== SLIDE-OUT MENU DRAWER ==================== -->
+<div id="drawerOverlay"></div>
+<aside id="navDrawer" aria-label="Menu Project & Banker VIP">
+  <div class="p-4 border-b flex items-center justify-between" style="border-color:var(--ln)">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shadow-lg" style="background:var(--grad-btn);color:var(--btn-txt)">DK</div>
+      <div>
+        <div class="text-sm font-bold flex items-center gap-1.5">DuyKhanh Dev <span class="cute-deco">🐰💖</span></div>
+        <div class="text-[11px]" style="color:var(--sub)">AI Studio • Video • Banker VIP</div>
+      </div>
+    </div>
+    <button id="bCloseMenu" type="button" class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer" style="background:var(--card)" aria-label="Đóng Menu">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
+  </div>
+
+  <div class="p-3.5 flex-1 overflow-y-auto flex flex-col justify-between gap-4">
+    <!-- Danh sách 3 tính năng chính -->
+    <div>
+      <div class="text-[10px] font-bold uppercase tracking-widest mb-2 px-1" style="color:var(--sub)">Công Cụ Đa Phương Tiện</div>
+      <div class="space-y-2" id="projectNavList">
+        <button type="button" class="nav-item active" data-view="enhance">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-none" style="background:color-mix(in srgb,var(--acc1) 18%,transparent);color:var(--acc1)"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold truncate">Làm Nét & Nâng Cấp Ảnh</div>
+            <div class="text-[11px] truncate" style="color:var(--sub)">Loading 0-100%, khử mờ, phóng to 4X</div>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold" style="background:color-mix(in srgb,var(--acc1) 18%,transparent);color:var(--acc1)">CHÍNH</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="outpaint">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-none" style="background:color-mix(in srgb,var(--acc2) 18%,transparent);color:var(--acc2)"><i data-lucide="expand" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold truncate">Mở Rộng Hình Ảnh (AI Expand)</div>
+            <div class="text-[11px] truncate" style="color:var(--sub)">Mở rộng khung 16:9, 9:16, 1:1 mượt mà</div>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold" style="background:color-mix(in srgb,var(--acc2) 18%,transparent);color:var(--acc2)">EXPAND</span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="downloader">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-none" style="background:color-mix(in srgb,var(--acc3) 18%,transparent);color:var(--acc3)"><i data-lucide="download-cloud" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold truncate">Tải Video TikTok / YouTube / FB</div>
+            <div class="text-[11px] truncate" style="color:var(--sub)">Dán link tải video HD không logo</div>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-bold" style="background:color-mix(in srgb,var(--acc3) 18%,transparent);color:var(--acc3)">HD MP4</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BANKER VIP ĐẶC SẮC TRONG MENU (CHỌN SỐ TIỀN + HIỂN THỊ TÊN) -->
+    <div class="pt-1">
+      <div class="text-[10px] font-bold uppercase tracking-widest text-amber-400 px-1 mb-2 flex items-center justify-between">
+        <span class="flex items-center gap-1.5"><i data-lucide="crown" class="w-3.5 h-3.5 text-amber-300"></i>Banker VIP • Quantum</span>
+        <span class="text-[10px] text-emerald-400">NAPAS 24/7</span>
+      </div>
+
+      <div class="qcard-wrap">
+        <div class="qcard p-3.5 space-y-3" id="miniBankerCard">
+          <div class="qcard-holo"></div>
+          <div class="qcard-glare" id="miniBankerGlare"></div>
+
+          <!-- Header -->
+          <div class="relative flex items-center justify-between">
+            <span class="text-xs font-black tracking-wider text-amber-300 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]"></span>AGRIBANK VIP
+            </span>
+            <span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-300/40 text-amber-200 font-bold">LÊ VĂN DUY KHÁNH</span>
+          </div>
+
+          <!-- QR + Account Info + Name -->
+          <div class="relative flex items-center gap-3">
+            <div class="relative w-20 h-20 rounded-xl bg-white p-1 shrink-0 shadow-[0_0_20px_rgba(0,240,255,.35)] overflow-hidden">
+              <img id="miniBankQr" src="https://img.vietqr.io/image/970405-8888375590209-qr_only.png?accountName=LE%20VAN%20DUY%20KHANH" alt="VietQR" class="w-full h-full object-contain">
+              <div class="qr-laser"></div>
+            </div>
+            <div class="flex-1 min-w-0 space-y-1">
+              <div class="text-[10px] text-zinc-400 uppercase tracking-wider">Chủ tài khoản</div>
+              <div class="text-xs font-extrabold text-emerald-300 truncate">LE VAN DUY KHANH</div>
+              <div class="flex items-center justify-between gap-1 pt-0.5">
+                <code class="text-[13px] font-black tracking-wider gold-shimmer select-all">8888375590209</code>
+                <button type="button" onclick="copySTK(this)" class="px-2 py-0.5 rounded bg-amber-400/20 hover:bg-amber-400/35 border border-amber-300/45 text-amber-200 text-[10px] font-bold cursor-pointer">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chọn nhanh số tiền để bank -->
+          <div class="relative space-y-1.5 pt-1 border-t border-white/10">
+            <div class="flex items-center justify-between text-[10px] text-zinc-300">
+              <span>Chọn số tiền tạo QR nhanh:</span>
+              <b id="miniAmtLabel" class="text-amber-300">Tùy tâm</b>
+            </div>
+            <div class="grid grid-cols-4 gap-1">
+              <button type="button" onclick="setBankAmount(20000)" class="py-1 rounded bg-white/10 hover:bg-amber-400/25 text-[10px] font-bold text-amber-200 cursor-pointer">20k</button>
+              <button type="button" onclick="setBankAmount(50000)" class="py-1 rounded bg-white/10 hover:bg-amber-400/25 text-[10px] font-bold text-amber-200 cursor-pointer">50k</button>
+              <button type="button" onclick="setBankAmount(100000)" class="py-1 rounded bg-white/10 hover:bg-amber-400/25 text-[10px] font-bold text-amber-200 cursor-pointer">100k</button>
+              <button type="button" onclick="setBankAmount(500000)
